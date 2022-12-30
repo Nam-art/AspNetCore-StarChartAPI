@@ -15,6 +15,54 @@ namespace StarChart.Controllers
         {
             _context = context;
         }
+        [HttpPost]
+        public IActionResult Create([FromBody]CelestialObject celestialObject)
+        {
+            _context.CelestialObjects.Add(celestialObject);
+            _context.SaveChanges();
+            var routeValue = new { id = celestialObject.Id };
+            return CreatedAtRoute("GetById",routeValue,celestialObject);
+        }
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, CelestialObject celestialObject)
+        {
+            var selectedObject = _context.CelestialObjects.SingleOrDefault(x => x.Id == id);
+            if (selectedObject == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                selectedObject.Name = celestialObject.Name;
+                selectedObject.OrbitalPeriod = celestialObject.OrbitalPeriod;
+                selectedObject.OrbitedObjectId = celestialObject.OrbitedObjectId;
+                _context.CelestialObjects.Update(selectedObject);
+                _context.SaveChanges();
+                return NoContent();
+            }
+        }
+        [HttpPatch("{id}/{name}")]
+        public IActionResult RenameObject(int id, string name)
+        {
+            var selectedObject = _context.CelestialObjects.SingleOrDefault(x => x.Id == id);
+            if (selectedObject == null)
+            {
+                return NotFound();
+            }
+            selectedObject.Name = name;
+            _context.Update(selectedObject);
+            _context.SaveChanges();
+            return NoContent();
+        }
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var selectedObjects = _context.CelestialObjects.Where(x => x.Id == id || x.OrbitedObjectId == id).ToList();
+            if (!selectedObjects.Any()) { return NotFound(); }
+            _context.CelestialObjects.RemoveRange(selectedObjects);
+            _context.SaveChanges();
+            return NoContent();
+        }
         [HttpGet("{id:int}",Name ="GetById")]
         public IActionResult GetById(int id)
         {
